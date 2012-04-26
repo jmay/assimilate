@@ -1,7 +1,7 @@
 require "yaml"
 
 class Assimilate::Catalog
-  attr_reader :catalog, :batches
+  attr_reader :catalog, :batches, :domainkey
 
   def initialize(args)
     @config = YAML.load(File.open(args[:config]))
@@ -9,6 +9,8 @@ class Assimilate::Catalog
     @db = Mongo::Connection.new.db(@config['db'])
     @catalog = @db.collection(@config['catalog'])
     @batches = @db.collection(@config['batch'])
+    @domainkey = @config['domain']
+    @domainkey = "_#{@domainkey}" unless @domainkey =~ /^_/ # enforce leading underscore on internal attributes
   end
 
   def start_batch(args)
@@ -16,6 +18,6 @@ class Assimilate::Catalog
   end
 
   def where(params)
-    
+    @catalog.find(params).first.delete_if {|k,v| k == '_id'}
   end
 end

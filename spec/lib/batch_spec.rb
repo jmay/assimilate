@@ -5,7 +5,11 @@ require "spec_helper"
 describe "importing file into empty catalog" do
   before :all do
     @catalog = Assimilate::Catalog.new(:config => File.dirname(__FILE__) + "/../data/test.yml")
-    @batcher = @catalog.start_batch(resource: 'testdata', datestamp: '120419', idfield: 'ID')
+
+    @catalog.catalog.remove
+    @catalog.batches.remove
+
+    @batcher = @catalog.start_batch(domain: 'testdata', datestamp: '120419', idfield: 'ID')
   end
 
   it "should load the records verbatim" do
