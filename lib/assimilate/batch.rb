@@ -25,9 +25,14 @@ class Assimilate::Batch
     end
   end
 
-  def <<(hash)
+  def stripped_record_for(key)
+    @baseline[key] && @baseline[key].select {|k,v| k !~ /^_/}
+  end
+
+  def <<(record)
+    hash = record.to_hash
     key = hash[@idfield]
-    current_record = @baseline[key]
+    current_record = stripped_record_for(key)
     if current_record
       if current_record == hash
         @noops << hash

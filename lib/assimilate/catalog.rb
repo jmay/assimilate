@@ -18,6 +18,6 @@ class Assimilate::Catalog
   end
 
   def where(params)
-    @catalog.find(params).first.delete_if {|k,v| k == '_id'}
+    @catalog.find(params).first.select {|k,v| k !~ /^_/}
   end
 end
