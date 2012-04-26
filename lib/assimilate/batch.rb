@@ -53,15 +53,26 @@ class Assimilate::Batch
   # * find records that have been deleted
   def resolve
     @deleted_keys = @baseline.keys - @seen.keys
+
+    @updated_field_counts = @changes.each_with_object(Hash.new(0)) do |rec,h|
+      key = rec[idfield]
+      diffs = rec.diff(stripped_record_for(key))
+      diffs.keys.each do |f|
+        h[f] += 1
+      end
+    end
   end
 
   def stats
     resolve
     {
+      :baseline_count => @baseline.size,
+      :final_count => @baseline.size + @adds.count,
       :adds_count => @adds.count,
       :deletes_count => @deleted_keys.count,
       :updates_count => @changes.count,
-      :unchanged_count => @noops.count
+      :unchanged_count => @noops.count,
+      :updated_fields => @updated_field_counts
     }
   end
 

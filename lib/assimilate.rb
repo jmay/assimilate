@@ -1,4 +1,5 @@
 require "mongo"
+require "active_support/core_ext" # needed for Hash#diff
 
 require_relative "assimilate/version"
 
