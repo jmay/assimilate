@@ -1,6 +1,6 @@
 # Assimilate
 
-TODO: Write a gem description
+Ingest updates from CSV and apply to set of persistent hashes
 
 ## Installation
 
@@ -18,7 +18,13 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+    assimilate --config repo.yml filename
+
+or
+
+    > require 'assimilate'
+    > catalog = Assimilate::Catalog.new(:config => configfile)
+    > catalog.start_batch(:filename => filename, :datestamp => datestamp, :idfield => idfield)
 
 ## Contributing
 
@@ -27,3 +33,4 @@ TODO: Write usage instructions here
 3. Commit your changes (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+

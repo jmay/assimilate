@@ -1,4 +1,6 @@
 class Assimilate::Batch
+  attr_reader :domain, :idfield, :datestamp
+
   def initialize(args)
     @catalog = args[:catalog]
     @domain = args[:domain]
@@ -30,8 +32,11 @@ class Assimilate::Batch
   end
 
   def <<(record)
+    @seen ||= Hash.new(0)
+
     hash = record.to_hash
     key = hash[@idfield]
+    @seen[key] += 1
     current_record = stripped_record_for(key)
     if current_record
       if current_record == hash
@@ -44,10 +49,17 @@ class Assimilate::Batch
     end
   end
 
+  # compute anything needed before we can write updates to permanent store
+  # * find records that have been deleted
+  def resolve
+    @deleted_keys = @baseline.keys - @seen.keys
+  end
+
   def stats
+    resolve
     {
       :adds_count => @adds.count,
-      :deletes_count => @deletes.count,
+      :deletes_count => @deleted_keys.count,
       :updates_count => @changes.count,
       :unchanged_count => @noops.count
     }
@@ -55,6 +67,7 @@ class Assimilate::Batch
 
   # write the updates to the catalog
   def commit
+    resolve
     record_batch
     apply_deletes
     apply_inserts
@@ -71,7 +84,15 @@ class Assimilate::Batch
   end
 
   def apply_deletes
-    
+    @deleted_keys.each do |key|
+      @catalog.catalog.update(
+        {
+          @catalog.domainkey => domain,
+          idfield => key
+        },
+        {"$set" => {:_dt_removed => datestamp}}
+    )
+    end
   end
 
   INSERT_BATCH_SIZE = 1000 # default batch size for bulk loading into mongo
@@ -84,7 +105,15 @@ class Assimilate::Batch
   end
 
   def apply_updates
-    
+    @changes.each do |rec|
+      @catalog.catalog.update(
+        {
+          @catalog.domainkey => domain,
+          idfield => rec[idfield]
+        },
+        {"$set" => rec}
+      )
+    end
   end
 
   def decorate(records)
