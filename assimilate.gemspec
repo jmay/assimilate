@@ -17,6 +17,7 @@ Gem::Specification.new do |gem|
   gem.version       = Assimilate::VERSION
 
   gem.add_dependency "mongoid", "~> 2.4.3"
+  gem.add_dependency "bson_ext", "~> 1.5.0"
 
   gem.add_development_dependency "rspec", "~> 2.9.0"
   gem.add_development_dependency "guard-rspec", "~> 0.7.0"

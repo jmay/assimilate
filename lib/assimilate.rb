@@ -1,3 +1,5 @@
+require "mongo"
+
 require_relative "assimilate/version"
 
 require_relative "assimilate/catalog"
