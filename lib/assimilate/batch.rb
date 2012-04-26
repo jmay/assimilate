@@ -15,13 +15,21 @@ class Assimilate::Batch
   end
 
   def load_baseline
-    @baseline = {}
+    stored_records = @catalog.catalog.find(@catalog.domainkey => @domain).to_a
+    @baseline = stored_records.each_with_object({}) do |rec, h|
+      key = rec[@idfield]
+      if h.include?(key)
+        raise Assimilate::CorruptDataError, "Duplicate records for key [#{key}] in domain [#{@domain}]"
+      end
+      h[key] = rec
+    end
   end
 
   def <<(hash)
     key = hash[@idfield]
-    if current = @baseline[key]
-      if current == hash
+    current_record = @baseline[key]
+    if current_record
+      if current_record == hash
         @noops << hash
       else
         @changes << hash
@@ -49,7 +57,7 @@ class Assimilate::Batch
   end
 
   def record_batch
-    raise "duplicate batch" if @catalog.batches.find('domain' => @domain, 'datestamp' => @datestamp).to_a.any?
+    raise(Assimilate::DuplicateImportError, "duplicate batch") if @catalog.batches.find('domain' => @domain, 'datestamp' => @datestamp).to_a.any?
     @catalog.batches.insert({
       'domain' => @domain,
       'datestamp' => @datestamp,
@@ -80,4 +88,7 @@ class Assimilate::Batch
       r.to_hash
     end
   end
+end
+
+class Assimilate::DuplicateImportError < StandardError
 end
