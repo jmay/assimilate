@@ -67,4 +67,7 @@ describe "loading extended data" do
       }
     end
   end
+
+  # test handling of multiple records for same ID in the extended-data file
+  # test importing data at top level (no keyfield for sub-attributes)
 end

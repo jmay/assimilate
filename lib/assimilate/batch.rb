@@ -137,3 +137,6 @@ end
 
 class Assimilate::DuplicateImportError < StandardError
 end
+
+class Assimilate::CorruptDataError < StandardError
+end

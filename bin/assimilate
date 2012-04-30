@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require_relative "../lib/assimilate"
+
+assimilator = Assimilate::Command.new
+command, options, filenames = assimilator.parse
+
+assimilator.execute(command, options, filenames)
