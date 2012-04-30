@@ -29,6 +29,10 @@ class Assimilate::Catalog
     Assimilate::Batch.new(args.merge(:catalog => self))
   end
 
+  def extend_data(args)
+    Assimilate::Extender.new(args.merge(:catalog => self))
+  end
+
   def where(params)
     @catalog.find(params).first.select {|k,v| k !~ /^_/}
   end

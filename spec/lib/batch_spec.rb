@@ -32,8 +32,8 @@ describe "importing file" do
     it "should return correct import stats" do
       @batcher.stats.should == {
         :baseline_count => 0,
-        :final_count => 5,
-        :adds_count => 5,
+        :final_count => 6,
+        :adds_count => 6,
         :deletes_count => 0,
         :updates_count => 0,
         :unchanged_count => 0,
@@ -54,12 +54,12 @@ describe "importing file" do
     it "should do all no-ops when importing identical data" do
       lambda {import_data("234")}.should_not raise_error
       @batcher.stats.should == {
-        :baseline_count => 5,
-        :final_count => 5,
+        :baseline_count => 6,
+        :final_count => 6,
         :adds_count => 0,
         :deletes_count => 0,
         :updates_count => 0,
-        :unchanged_count => 5,
+        :unchanged_count => 6,
         :updated_fields => {}
       }
       @catalog.catalog.count.should == @records.count
@@ -78,10 +78,10 @@ describe "importing file" do
 
     it "should recognize changes" do
       @batcher.stats.should == {
-        :baseline_count => 5,
-        :final_count => 6,
+        :baseline_count => 6,
+        :final_count => 7,
         :adds_count => 1,
-        :deletes_count => 1,
+        :deletes_count => 2,
         :updates_count => 1,
         :unchanged_count => 3,
         :updated_fields => {'title' => 1}
