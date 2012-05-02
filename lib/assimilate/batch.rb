@@ -92,7 +92,9 @@ class Assimilate::Batch
   end
 
   def record_batch
-    raise(Assimilate::DuplicateImportError, "duplicate batch") if @catalog.batches.find('domain' => @domain, 'datestamp' => @datestamp).to_a.any?
+    raise(Assimilate::DuplicateImportError, "duplicate batch for datestamp #{datestamp}") if @catalog.batches.find('domain' => @domain, 'datestamp' => @datestamp).to_a.any?
+    raise(Assimilate::DuplicateImportError, "duplicate batch for file #{@filename}") if @catalog.batches.find('domain' => @domain, 'filename' => @filename).to_a.any?
+
     @catalog.batches.insert({
       'domain' => @domain,
       'datestamp' => @datestamp,

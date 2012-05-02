@@ -21,7 +21,15 @@ class Assimilate::Command
       end
 
       opts.on("--key FIELDNAME", String, "(*extend* only) Hash key to store extended attributes under") do |f|
-        @options[:keyfield] = f
+        @options[:key] = f
+      end
+
+      opts.on("--datestamp DATESTRING", String, "(*load* only) Datestamp to record for file batch operation") do |s|
+        @options[:datestamp] = s
+      end
+
+      opts.on("--domain STRING", String, "Domain value to apply to each record") do |s|
+        @options[:domain] = s
       end
     end
   end
@@ -32,6 +40,7 @@ class Assimilate::Command
 
     raise OptionParser::MissingArgument, "missing config" unless options[:config]
     raise OptionParser::MissingArgument, "missing idfield" unless options[:idfield]
+    raise OptionParser::MissingArgument, "missing domain" unless options[:domain]
     raise "missing filename" unless filenames.any?
 
     # argv remnants are filenames
@@ -43,10 +52,14 @@ class Assimilate::Command
 
     case command
     when 'load'
+      raise OptionParser::MissingArgument, "missing datestamp" unless options[:datestamp]
+
       results = Assimilate.load(filename, options)
       logmessage(command, options, results)
 
     when 'extend'
+      raise OptionParser::MissingArgument, "missing keyfield" unless options[:key]
+
       results = Assimilate.extend_data(filename, options)
       logmessage(command, options, results)
 
@@ -93,7 +106,7 @@ EOT
       if results[:updated_fields].any?
         results[:updated_fields].each do |k,v|
           $stderr.puts <<-EOT
-                        #{options[:keyfield]}.#{k}: #{v}
+                        #{options[:key]}.#{k}: #{v}
 EOT
         end
       end

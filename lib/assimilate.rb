@@ -14,7 +14,7 @@ module Assimilate
   def self.load(filename, opts = {})
     begin
       catalog = Catalog.new(:config => opts[:config])
-      batcher = catalog.start_batch(opts)
+      batcher = catalog.start_batch(opts.merge(:filename => filename))
 
       records = CSV.read(filename, :headers => true)
       records.each do |rec|

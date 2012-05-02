@@ -14,7 +14,7 @@ describe "importing file" do
   end
 
   def import_data(datestamp, filename = "batch_input.csv")
-    @batcher = @catalog.start_batch(domain: 'testdata', datestamp: datestamp, idfield: 'ID')
+    @batcher = @catalog.start_batch(domain: 'testdata', datestamp: datestamp, filename: filename, idfield: 'ID')
 
     @records = CSV.read(File.dirname(__FILE__) + "/../data/#{filename}", :headers => true)
     @records.each do |rec|
@@ -52,8 +52,12 @@ describe "importing file" do
       lambda {import_data("123")}.should raise_error(Assimilate::DuplicateImportError)
     end
 
+    it "should refuse to re-import same file" do
+      lambda {import_data("234")}.should raise_error(Assimilate::DuplicateImportError)
+    end
+
     it "should do all no-ops when importing identical data" do
-      lambda {import_data("234")}.should_not raise_error
+      lambda {import_data("234", "duplicate_input.csv")}.should_not raise_error
       @batcher.stats.should == {
         :baseline_count => 6,
         :final_count => 6,

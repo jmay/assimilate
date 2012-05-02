@@ -1,10 +1,9 @@
 class Assimilate::Extender
-  attr_reader :domain, :idfield, :datestamp, :keyfield
+  attr_reader :domain, :idfield, :keyfield
 
   def initialize(args)
     @catalog = args[:catalog]
     @domain = args[:domain]
-    @datestamp = args[:datestamp]
     @idfield = args[:idfield]
     @filename = args[:filename]
     @keyfield = args[:key]
@@ -65,11 +64,6 @@ class Assimilate::Extender
 
   # write all the changes to the catalog
   def commit
-    # puts "ADDS"
-    # puts @adds.inspect
-    # puts "CHANGES"
-    # puts @changes.inspect
-    # puts "DONE"
     apply_inserts
     apply_updates
   end
