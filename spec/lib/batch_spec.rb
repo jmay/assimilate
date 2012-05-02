@@ -16,8 +16,7 @@ describe "importing file" do
   def import_data(datestamp, filename = "batch_input.csv")
     @batcher = @catalog.start_batch(domain: 'testdata', datestamp: datestamp, filename: filename, idfield: 'ID')
 
-    @records = CSV.read(File.dirname(__FILE__) + "/../data/#{filename}", :headers => true)
-    @records.each do |rec|
+    Assimilate.slurp(File.dirname(__FILE__) + "/../data/#{filename}") do |rec|
       @batcher << rec
     end
     @batcher.commit
@@ -38,15 +37,15 @@ describe "importing file" do
         :deletes_count => 0,
         :deleted_ids => [],
         :updates_count => 0,
+        :updated_ids => [],
         :unchanged_count => 0,
         :updated_fields => {}
       }
     end
 
     it "should load the records verbatim" do
-      @catalog.catalog.count.should == @records.count
-      example = @records[rand(@records.count)]
-      @catalog.where('_resource' => 'testdata', 'ID' => example['ID']).should == example.to_hash
+      @catalog.catalog.count.should == 6
+      @catalog.where('_resource' => 'testdata', 'ID' => '3').should == {'ID' => '3', 'name' => 'Benjamin Franklin', 'title' => 'Sage'}
     end
 
     it "should refuse to do a duplicate import" do
@@ -67,10 +66,11 @@ describe "importing file" do
         :deletes_count => 0,
         :deleted_ids => [],
         :updates_count => 0,
+        :updated_ids => [],
         :unchanged_count => 6,
         :updated_fields => {}
       }
-      @catalog.catalog.count.should == @records.count
+      @catalog.catalog.count.should == 6
     end
   end
 
@@ -93,10 +93,11 @@ describe "importing file" do
         :deletes_count => 2,
         :deleted_ids => ['4', '6'],
         :updates_count => 1,
+        :updated_ids => ['3'],
         :unchanged_count => 3,
         :updated_fields => {'title' => 1}
       }
-      @catalog.active_count.should == @records.count
+      @catalog.active_count.should == 5
     end
   end
 end

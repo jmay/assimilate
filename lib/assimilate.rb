@@ -16,8 +16,7 @@ module Assimilate
       catalog = Catalog.new(:config => opts[:config])
       batcher = catalog.start_batch(opts.merge(:filename => filename))
 
-      records = CSV.read(filename, :headers => true)
-      records.each do |rec|
+      slurp(filename) do |rec|
         batcher << rec
       end
       if opts[:commit]
@@ -37,8 +36,7 @@ module Assimilate
     begin
       catalog = Catalog.new(:config => opts[:config])
       extender = catalog.extend_data(opts)
-      records = CSV.read(filename, :headers => true)
-      records.each do |rec|
+      slurp(filename) do |rec|
         extender << rec
       end
       if opts[:commit]
@@ -47,6 +45,22 @@ module Assimilate
         $stderr.puts "suppressing data commit"
       end
       extender.stats
+    end
+  end
+
+  def self.slurp(filename)
+    headers = nil
+    CSV.read(filename).each do |row|
+      if !headers
+        headers = row.to_a
+      else
+        raise "Row count mismatch: #{row} vs #{headers}" if row.count > headers.count
+        hash = {}
+        row.zip(headers) do |v,k|
+          hash[k] = v.strip unless v.blank?
+        end
+        yield hash
+      end
     end
   end
 end

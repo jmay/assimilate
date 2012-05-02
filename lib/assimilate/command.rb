@@ -82,7 +82,7 @@ EOT
         Unchanged records: #{results[:unchanged_count]}
               New records: #{results[:adds_count]} (#{results[:new_ids].take(10).join(',')})
                   Deletes: #{results[:deletes_count]} (#{results[:deleted_ids].take(10).join(',')})
-                  Updates: #{results[:updates_count]}
+                  Updates: #{results[:updates_count]} (#{results[:updated_ids].take(10).join(',')})
 EOT
       if results[:updated_fields].any?
         $stderr.puts <<-EOT

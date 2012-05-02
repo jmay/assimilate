@@ -80,6 +80,7 @@ class Assimilate::Batch
       :deletes_count => @deleted_keys.count,
       :deleted_ids => @deleted_keys,
       :updates_count => @changes.count,
+      :updated_ids => @changes.map {|rec| rec[idfield]},
       :unchanged_count => @noops.count,
       :updated_fields => @updated_field_counts
     }
