@@ -33,17 +33,20 @@ class Assimilate::Extender
 
     hash = record.to_hash
     key = hash[@idfield]
-    data = hash.reject {|k,v| k == @keyfield}
-    @seen[key] = data
+    data = hash.reject {|k,v| k == idfield}
+    # @seen[key] = data
     current_record = @baseline[key]
     if current_record
       if current_record[@keyfield] == data
         @noops << key
+        @seen[key] = {}
       else
         @changes << key
+        @seen[key] = data
       end
     else
       @adds << key
+      @seen[key] = data
     end
   end
 
@@ -53,7 +56,9 @@ class Assimilate::Extender
       :final_count => @baseline.size + @adds.count,
       :distinct_ids => @seen.size,
       :adds_count => @adds.count,
+      :new_ids => @adds,
       :updates_count => @changes.count,
+      :updated_fields => @seen.each_with_object(Hash.new(0)) {|(k,hash),memo| hash.each {|k,v| memo[k] += 1}},
       :unchanged_count => @noops.count
     }
   end

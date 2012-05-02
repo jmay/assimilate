@@ -16,8 +16,8 @@ module Assimilate
       catalog = Catalog.new(:config => opts[:config])
       batcher = catalog.start_batch(opts)
 
-      @records = CSV.read(filename, :headers => true)
-      @records.each do |rec|
+      records = CSV.read(filename, :headers => true)
+      records.each do |rec|
         batcher << rec
       end
       if opts[:commit]
@@ -30,6 +30,23 @@ module Assimilate
     # rescue Assimilate::DuplicateImportError => e
     #   $stderr.puts e.message
     #   exit 1
+    end
+  end
+
+  def self.extend_data(filename, opts = {})
+    begin
+      catalog = Catalog.new(:config => opts[:config])
+      extender = catalog.extend_data(opts)
+      records = CSV.read(filename, :headers => true)
+      records.each do |rec|
+        extender << rec
+      end
+      if opts[:commit]
+        extender.commit
+      else
+        $stderr.puts "suppressing data commit"
+      end
+      extender.stats
     end
   end
 end

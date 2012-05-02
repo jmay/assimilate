@@ -48,7 +48,9 @@ describe "loading extended data" do
         :final_count => 7,
         :distinct_ids => 4,
         :adds_count => 1,
+        :new_ids => ['16'],
         :updates_count => 3,
+        :updated_fields => {'date' => 4},
         :unchanged_count => 0
       }
     end
@@ -62,7 +64,9 @@ describe "loading extended data" do
         :final_count => 7,
         :distinct_ids => 4,
         :adds_count => 0,
+        :new_ids => [],
         :updates_count => 0,
+        :updated_fields => {},
         :unchanged_count => 4
       }
     end
