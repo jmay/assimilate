@@ -14,6 +14,7 @@ class Assimilate::Batch
     @changes = []
     @adds = []
     @deletes = []
+    @resolved = false
   end
 
   def load_baseline
@@ -52,14 +53,18 @@ class Assimilate::Batch
   # compute anything needed before we can write updates to permanent store
   # * find records that have been deleted
   def resolve
-    @deleted_keys = @baseline.keys - @seen.keys
+    if !@resolved
+      @deleted_keys = @baseline.keys - @seen.keys
 
-    @updated_field_counts = @changes.each_with_object(Hash.new(0)) do |rec,h|
-      key = rec[idfield]
-      diffs = rec.diff(stripped_record_for(key))
-      diffs.keys.each do |f|
-        h[f] += 1
+      @updated_field_counts = @changes.each_with_object(Hash.new(0)) do |rec,h|
+        key = rec[idfield]
+        diffs = rec.diff(stripped_record_for(key))
+        diffs.keys.each do |f|
+          h[f] += 1
+        end
       end
+
+      @resolved = true
     end
   end
 
@@ -69,6 +74,7 @@ class Assimilate::Batch
       :baseline_count => @baseline.size,
       :final_count => @baseline.size + @adds.count,
       :adds_count => @adds.count,
+      :new_ids => @adds.map {|rec| rec[idfield]},
       :deletes_count => @deleted_keys.count,
       :updates_count => @changes.count,
       :unchanged_count => @noops.count,

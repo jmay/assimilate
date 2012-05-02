@@ -12,14 +12,24 @@ require_relative "assimilate/command"
 
 module Assimilate
   def self.load(filename, opts = {})
-    catalog = Catalog.new(:config => opts[:config])
-    batcher = catalog.start_batch(opts)
+    begin
+      catalog = Catalog.new(:config => opts[:config])
+      batcher = catalog.start_batch(opts)
 
-    @records = CSV.read(filename, :headers => true)
-    @records.each do |rec|
-      batcher << rec
+      @records = CSV.read(filename, :headers => true)
+      @records.each do |rec|
+        batcher << rec
+      end
+      if opts[:commit]
+        batcher.commit
+      else
+        $stderr.puts "suppressing data commit"
+      end
+      batcher.stats
+    # TODO explicit handling for Assimilate exceptions - when code is stable
+    # rescue Assimilate::DuplicateImportError => e
+    #   $stderr.puts e.message
+    #   exit 1
     end
-    batcher.commit
-    batcher.stats
   end
 end
