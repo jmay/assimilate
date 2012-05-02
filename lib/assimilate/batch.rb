@@ -3,6 +3,8 @@ class Assimilate::Batch
 
   def initialize(args)
     @catalog = args[:catalog]
+    @domainkey = @catalog.config[:domain]
+
     @domain = args[:domain]
     @datestamp = args[:datestamp]
     @idfield = args[:idfield]
@@ -18,11 +20,11 @@ class Assimilate::Batch
   end
 
   def load_baseline
-    stored_records = @catalog.catalog.find(@catalog.domainkey => @domain).to_a
+    stored_records = @catalog.catalog.find(@domainkey => @domain).to_a
     @baseline = stored_records.each_with_object({}) do |rec, h|
       key = rec[@idfield]
       if h.include?(key)
-        raise Assimilate::CorruptDataError, "Duplicate records for key [#{key}] in domain [#{@domain}]"
+        raise Assimilate::CorruptDataError, "Duplicate records for key [#{key}] in #{@domainkey} [#{@domain}]"
       end
       h[key] = rec
     end
@@ -54,7 +56,7 @@ class Assimilate::Batch
   # * find records that have been deleted
   def resolve
     if !@resolved
-      @deleted_keys = @baseline.keys - @seen.keys
+      @deleted_keys = (@baseline.keys - @seen.keys).reject {|k| @baseline[k][@catalog.config[:deletion_marker]]}
 
       @updated_field_counts = @changes.each_with_object(Hash.new(0)) do |rec,h|
         key = rec[idfield]
@@ -76,6 +78,7 @@ class Assimilate::Batch
       :adds_count => @adds.count,
       :new_ids => @adds.map {|rec| rec[idfield]},
       :deletes_count => @deleted_keys.count,
+      :deleted_ids => @deleted_keys,
       :updates_count => @changes.count,
       :unchanged_count => @noops.count,
       :updated_fields => @updated_field_counts
@@ -92,11 +95,11 @@ class Assimilate::Batch
   end
 
   def record_batch
-    raise(Assimilate::DuplicateImportError, "duplicate batch for datestamp #{datestamp}") if @catalog.batches.find('domain' => @domain, 'datestamp' => @datestamp).to_a.any?
-    raise(Assimilate::DuplicateImportError, "duplicate batch for file #{@filename}") if @catalog.batches.find('domain' => @domain, 'filename' => @filename).to_a.any?
+    raise(Assimilate::DuplicateImportError, "duplicate batch for datestamp #{datestamp}") if @catalog.batches.find(@domainkey => @domain, 'datestamp' => @datestamp).to_a.any?
+    raise(Assimilate::DuplicateImportError, "duplicate batch for file #{@filename}") if @catalog.batches.find(@domainkey => @domain, 'filename' => @filename).to_a.any?
 
     @catalog.batches.insert({
-      'domain' => @domain,
+      @domainkey => @domain,
       'datestamp' => @datestamp,
       'filename' => @filename
       })
@@ -106,10 +109,10 @@ class Assimilate::Batch
     @deleted_keys.each do |key|
       @catalog.catalog.update(
         {
-          @catalog.domainkey => domain,
+          @domainkey => domain,
           idfield => key
         },
-        {"$set" => {:_dt_removed => datestamp}}
+        {"$set" => {@catalog.config[:deletion_marker] => datestamp}}
     )
     end
   end
@@ -127,7 +130,7 @@ class Assimilate::Batch
     @changes.each do |rec|
       @catalog.catalog.update(
         {
-          @catalog.domainkey => domain,
+          @domainkey => domain,
           idfield => rec[idfield]
         },
         {"$set" => rec}
@@ -137,7 +140,7 @@ class Assimilate::Batch
 
   def decorate(records)
     records.map do |r|
-      r[@catalog.domainkey] = @domain
+      r[@domainkey] = @domain
       r.to_hash
     end
   end

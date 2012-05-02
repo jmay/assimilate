@@ -36,6 +36,7 @@ describe "importing file" do
         :adds_count => 6,
         :new_ids => ["1", "2", "3", "4", "5", "6"],
         :deletes_count => 0,
+        :deleted_ids => [],
         :updates_count => 0,
         :unchanged_count => 0,
         :updated_fields => {}
@@ -64,6 +65,7 @@ describe "importing file" do
         :adds_count => 0,
         :new_ids => [],
         :deletes_count => 0,
+        :deleted_ids => [],
         :updates_count => 0,
         :unchanged_count => 6,
         :updated_fields => {}
@@ -89,6 +91,7 @@ describe "importing file" do
         :adds_count => 1,
         :new_ids => ["7"],
         :deletes_count => 2,
+        :deleted_ids => ['4', '6'],
         :updates_count => 1,
         :unchanged_count => 3,
         :updated_fields => {'title' => 1}

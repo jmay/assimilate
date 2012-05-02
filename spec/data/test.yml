@@ -3,3 +3,4 @@ db: assimilate-test
 catalog: forefathers
 batch: files
 domain: resource
+deletion_marker: dt_removed

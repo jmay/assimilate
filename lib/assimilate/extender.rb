@@ -3,6 +3,8 @@ class Assimilate::Extender
 
   def initialize(args)
     @catalog = args[:catalog]
+    @domainkey = @catalog.config[:domain]
+
     @domain = args[:domain]
     @idfield = args[:idfield]
     @filename = args[:filename]
@@ -17,11 +19,11 @@ class Assimilate::Extender
   end
 
   def load_baseline
-    stored_records = @catalog.catalog.find(@catalog.domainkey => @domain).to_a
+    stored_records = @catalog.catalog.find(@domainkey => @domain).to_a
     @baseline = stored_records.each_with_object({}) do |rec, h|
       key = rec[@idfield]
       if h.include?(key)
-        raise Assimilate::CorruptDataError, "Duplicate records for key [#{key}] in domain [#{@domain}]"
+        raise Assimilate::CorruptDataError, "Duplicate records for key [#{key}] in #{@domainkey} [#{@domain}]"
       end
       h[key] = rec
     end
@@ -75,7 +77,7 @@ class Assimilate::Extender
     @adds.each do |key|
       data = @seen[key]
       @catalog.catalog.insert(
-        @catalog.domainkey => domain,
+        @domainkey => domain,
         idfield => key,
         keyfield => data
       )
@@ -88,7 +90,7 @@ class Assimilate::Extender
       data = @seen[key]
       @catalog.catalog.update(
         {
-          @catalog.domainkey => domain,
+          @domainkey => domain,
           idfield => key
         },
         {"$set" => {
