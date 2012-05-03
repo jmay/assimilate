@@ -16,8 +16,7 @@ describe "loading extended data" do
   def import_base_data(datestamp, filename = "batch_input.csv")
     @batcher = @catalog.start_batch(domain: 'testdata', datestamp: datestamp, idfield: 'ID')
 
-    @records = CSV.read(File.dirname(__FILE__) + "/../data/#{filename}", :headers => true)
-    @records.each do |rec|
+    Assimilate.slurp(File.dirname(__FILE__) + "/../data/#{filename}") do |rec|
       @batcher << rec
     end
     @batcher.commit
@@ -31,8 +30,7 @@ describe "loading extended data" do
 
     def import_extended_data(datestamp, filename)
       @extender = @catalog.extend_data(domain: 'testdata', datastamp: datestamp, idfield: 'ID', key: 'inauguration')
-      @records = CSV.read(File.dirname(__FILE__) + "/../data/#{filename}", :headers => true)
-      @records.each do |rec|
+      Assimilate.slurp(File.dirname(__FILE__) + "/../data/#{filename}") do |rec|
         @extender << rec
       end
       @extender.commit
