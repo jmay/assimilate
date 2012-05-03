@@ -13,7 +13,7 @@ class Assimilate::Batch
     load_baseline
 
     @noops = []
-    @changes = []
+    @changes = {}
     @adds = []
     @deletes = []
     @resolved = false
@@ -45,11 +45,15 @@ class Assimilate::Batch
       if current_record == hash
         @noops << hash
       else
-        @changes << hash
+        @changes[key] = deltas(current_record, hash)
       end
     else
       @adds << hash
     end
+  end
+
+  def deltas(h1,h2)
+    (h1.keys | h2.keys).each_with_object({}) {|k,h| h[k] = h2[k] if h1[k] != h2[k]}
   end
 
   # compute anything needed before we can write updates to permanent store
@@ -58,9 +62,9 @@ class Assimilate::Batch
     if !@resolved
       @deleted_keys = (@baseline.keys - @seen.keys).reject {|k| @baseline[k][@catalog.config[:deletion_marker]]}
 
-      @updated_field_counts = @changes.each_with_object(Hash.new(0)) do |rec,h|
-        key = rec[idfield]
-        diffs = rec.diff(stripped_record_for(key))
+      @updated_field_counts = @changes.each_with_object(Hash.new(0)) do |(key,diffs),h|
+        # key = rec[idfield]
+        # diffs = deltas(stripped_record_for(key), rec)
         diffs.keys.each do |f|
           h[f] += 1
         end
@@ -79,8 +83,8 @@ class Assimilate::Batch
       :new_ids => @adds.map {|rec| rec[idfield]},
       :deletes_count => @deleted_keys.count,
       :deleted_ids => @deleted_keys,
-      :updates_count => @changes.count,
-      :updated_ids => @changes.map {|rec| rec[idfield]},
+      :updates_count => @changes.size,
+      :updated_ids => @changes.keys,
       :unchanged_count => @noops.count,
       :updated_fields => @updated_field_counts
     }
@@ -128,13 +132,13 @@ class Assimilate::Batch
   end
 
   def apply_updates
-    @changes.each do |rec|
+    @changes.each do |key, diffs|
       @catalog.catalog.update(
         {
           @domainkey => domain,
-          idfield => rec[idfield]
+          idfield => key
         },
-        {"$set" => rec}
+        {"$set" => diffs}
       )
     end
   end

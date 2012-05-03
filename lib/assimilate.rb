@@ -1,5 +1,5 @@
 require "mongo"
-require "active_support/core_ext" # needed for Hash#diff
+require "active_support/core_ext" # needed for Hash#symbolize_keys!
 require "csv"
 
 require_relative "assimilate/version"

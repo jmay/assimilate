@@ -51,7 +51,8 @@ class Assimilate::Catalog
   end
 
   def where(params)
-    @catalog.find(params).first.select {|k,v| k !~ /^_/}
+    record = @catalog.find(params).first
+    record && record.select {|k,v| k !~ /^_/}
   end
 
   def active_count

@@ -1,6 +1,6 @@
-ID,name,title
-1,George Washington,President
-2,John Adams,Vice President
-3,Benjamin Franklin,Ambassador
-5,Alexander Hamilton,Financier
-7,Thomas Jefferson,Anti-Federalist
+ID,name,title,spouse
+1,George Washington,President,Martha
+2,John Adams,Vice President,Abigail
+3,Benjamin Franklin,Ambassador,
+5,Alexander Hamilton,Financier,Elizabeth
+7,Thomas Jefferson,Anti-Federalist,

@@ -45,15 +45,16 @@ describe "importing file" do
 
     it "should load the records verbatim" do
       @catalog.catalog.count.should == 6
-      @catalog.where('_resource' => 'testdata', 'ID' => '3').should == {'ID' => '3', 'name' => 'Benjamin Franklin', 'title' => 'Sage'}
+      @catalog.where('_resource' => 'testdata', 'ID' => '3').should ==
+        {'ID' => '3', 'name' => 'Benjamin Franklin', 'title' => 'Sage', 'spouse' => 'Deborah'}
     end
 
     it "should refuse to do a duplicate import" do
-      lambda {import_data("123")}.should raise_error(Assimilate::DuplicateImportError)
+      lambda {import_data("123")}.should raise_error(Assimilate::DuplicateImportError, "duplicate batch for datestamp 123")
     end
 
     it "should refuse to re-import same file" do
-      lambda {import_data("234")}.should raise_error(Assimilate::DuplicateImportError)
+      lambda {import_data("234")}.should raise_error(Assimilate::DuplicateImportError, "duplicate batch for file batch_input.csv")
     end
 
     it "should do all no-ops when importing identical data" do
@@ -78,9 +79,7 @@ describe "importing file" do
     before(:all) do
       reset_catalog
       import_data("123")
-    end
 
-    before(:each) do
       import_data("345", "updates.csv")
     end
 
@@ -95,9 +94,14 @@ describe "importing file" do
         :updates_count => 1,
         :updated_ids => ['3'],
         :unchanged_count => 3,
-        :updated_fields => {'title' => 1}
+        :updated_fields => {'title' => 1, 'spouse' => 1}
       }
       @catalog.active_count.should == 5
+    end
+
+    it "should handle deleted attributes" do
+      franklin = @catalog.where('ID' => '3')
+      franklin['spouse'].should be_nil
     end
   end
 end
