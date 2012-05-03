@@ -4,3 +4,5 @@ catalog: forefathers
 batch: files
 domain: resource
 deletion_marker: dt_removed
+insertion_marker: first_seen
+update_marker: last_updated

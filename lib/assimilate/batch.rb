@@ -132,20 +132,23 @@ class Assimilate::Batch
   end
 
   def apply_updates
+    marker = @catalog.config[:update_marker]
     @changes.each do |key, diffs|
       @catalog.catalog.update(
         {
           @domainkey => domain,
           idfield => key
         },
-        {"$set" => diffs}
+        {"$set" => diffs.merge(marker => datestamp)}
       )
     end
   end
 
   def decorate(records)
+    marker = @catalog.config[:insertion_marker]
     records.map do |r|
       r[@domainkey] = @domain
+      r[marker] = datestamp
       r.to_hash
     end
   end

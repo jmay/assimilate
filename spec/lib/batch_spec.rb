@@ -45,8 +45,8 @@ describe "importing file" do
 
     it "should load the records verbatim" do
       @catalog.catalog.count.should == 6
-      @catalog.where('_resource' => 'testdata', 'ID' => '3').should ==
-        {'ID' => '3', 'name' => 'Benjamin Franklin', 'title' => 'Sage', 'spouse' => 'Deborah'}
+      franklin = @catalog.where('_resource' => 'testdata', 'ID' => '3')
+      franklin.keys.sort.should == ['ID', 'name', 'title', 'spouse', '_id', '_resource', '_first_seen'].sort
     end
 
     it "should refuse to do a duplicate import" do
@@ -102,6 +102,7 @@ describe "importing file" do
     it "should handle deleted attributes" do
       franklin = @catalog.where('ID' => '3')
       franklin['spouse'].should be_nil
+      franklin['_last_updated'].should == '345'
     end
   end
 end

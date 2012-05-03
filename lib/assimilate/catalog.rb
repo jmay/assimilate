@@ -33,10 +33,10 @@ class Assimilate::Catalog
 
   def check_config
     config.symbolize_keys!
-    [:db, :catalog, :batch, :domain, :deletion_marker].each do |key|
+    [:db, :catalog, :batch, :domain, :deletion_marker, :insertion_marker, :update_marker].each do |key|
       raise Assimilate::InvalidConfiguration, "missing required parameter: #{key}" unless config[key]
     end
-    [:domain, :deletion_marker].each do |key|
+    [:domain, :deletion_marker, :insertion_marker, :update_marker].each do |key|
       # enforce leading underscore on internal attributes
       config[key] = "_#{config[key]}" unless config[key] =~ /^_/
     end
@@ -51,8 +51,12 @@ class Assimilate::Catalog
   end
 
   def where(params)
-    record = @catalog.find(params).first
-    record && record.select {|k,v| k !~ /^_/}
+    records = @catalog.find(params).to_a #.map {|rec| rec.select {|k,v| k !~ /^_/}}
+    if records.count == 1
+      records.first
+    else
+      records
+    end
   end
 
   def active_count
