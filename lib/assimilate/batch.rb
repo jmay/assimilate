@@ -30,8 +30,11 @@ class Assimilate::Batch
     end
   end
 
+  # The stripped record contains only the data values from the source (no internal values with leading underscores).
+  # Any nil values are ignored; these should not be stored but if they do appear in the catalog then don't want
+  # to include them when comparing new records vs. old.
   def stripped_record_for(key)
-    @baseline[key] && @baseline[key].select {|k,v| k !~ /^_/}
+    @baseline[key] && @baseline[key].select {|k,v| k !~ /^_/ && !v.nil?}
   end
 
   def <<(record)
@@ -100,11 +103,14 @@ class Assimilate::Batch
   end
 
   def record_batch
-    raise(Assimilate::DuplicateImportError, "duplicate batch for datestamp #{datestamp}") if @catalog.batches.find(@domainkey => @domain, 'datestamp' => @datestamp).to_a.any?
-    raise(Assimilate::DuplicateImportError, "duplicate batch for file #{@filename}") if @catalog.batches.find(@domainkey => @domain, 'filename' => @filename).to_a.any?
+    # don't want leading underscore on attributes in the batches table
+    dkey = @domainkey.gsub(/^_/,'')
+
+    raise(Assimilate::DuplicateImportError, "duplicate batch for datestamp #{datestamp}") if @catalog.batches.find(dkey => @domain, 'datestamp' => @datestamp).to_a.any?
+    raise(Assimilate::DuplicateImportError, "duplicate batch for file #{@filename}") if @catalog.batches.find(dkey => @domain, 'filename' => @filename).to_a.any?
 
     @catalog.batches.insert({
-      @domainkey => @domain,
+      dkey => @domain,
       'datestamp' => @datestamp,
       'filename' => @filename
       })
