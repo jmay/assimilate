@@ -31,6 +31,10 @@ class Assimilate::Command
       opts.on("--domain STRING", String, "Domain value to apply to each record") do |s|
         @options[:domain] = s
       end
+
+      opts.on("--compare FIELDNAME", String, "(*extend* only) Optional field to check whether an update is current (e.g. timestamp)") do |f|
+        @options[:compare] = f
+      end
     end
   end
 

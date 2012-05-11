@@ -74,7 +74,7 @@ describe "loading extended data" do
     before(:all) do
       reset_catalog
       import_base_data("20120501")
-      import_extended_data("20120505", "logs1.csv")
+      import_extended_data("20120505", "logs1.csv", :compare => 'timestamp')
     end
 
 

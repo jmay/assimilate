@@ -37,7 +37,7 @@ class Assimilate::Extender
   # if there is a field to compare on (i.e. a timestamp), then apply the update if the timestamp is newer;
   # otherwise (no timestamp) compare the hashes and apply if there are any differences.
   def apply_this_update(current_record, new_data)
-    if @comparison_field
+    if @comparison_field && current_record[@keyfield]
       is_newer(current_record[@keyfield], new_data)
     else
       current_record[@keyfield] != new_data
