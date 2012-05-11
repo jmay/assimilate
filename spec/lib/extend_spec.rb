@@ -22,18 +22,18 @@ describe "loading extended data" do
     @batcher.commit
   end
 
+  def import_extended_data(datestamp, filename, opts = {})
+    @extender = @catalog.extend_data(opts.merge(domain: 'testdata', datestamp: datestamp, idfield: 'ID', key: 'inauguration'))
+    Assimilate.slurp(File.dirname(__FILE__) + "/../data/#{filename}") do |rec|
+      @extender << rec
+    end
+    @extender.commit
+  end
+
   describe "into matching catalog entries" do
     before(:all) do
       reset_catalog
       import_base_data("123")
-    end
-
-    def import_extended_data(datestamp, filename)
-      @extender = @catalog.extend_data(domain: 'testdata', datastamp: datestamp, idfield: 'ID', key: 'inauguration')
-      Assimilate.slurp(File.dirname(__FILE__) + "/../data/#{filename}") do |rec|
-        @extender << rec
-      end
-      @extender.commit
     end
 
     before(:each) do
@@ -69,6 +69,87 @@ describe "loading extended data" do
       }
     end
   end
+
+  describe "updating log entries" do
+    before(:all) do
+      reset_catalog
+      import_base_data("20120501")
+      import_extended_data("20120505", "logs1.csv")
+    end
+
+
+    before(:each) do
+    end
+
+    it "should capture changes" do
+      @extender.stats.should == {
+        :baseline_count => 6,
+        :final_count => 6,
+        :distinct_ids => 4,
+        :adds_count => 0,
+        :new_ids => [],
+        :updates_count => 4,
+        :updated_fields => {'timestamp' => 4, 'event' => 4},
+        :unchanged_count => 0
+      }
+    end
+
+    it "should load the new events" do
+      lambda {import_extended_data("20120506", "logs2.csv", :compare => 'timestamp')}.should_not raise_error
+
+      @extender.stats.should == {
+        :baseline_count => 6,
+        :final_count => 6,
+        :distinct_ids => 4,
+        :adds_count => 0,
+        :new_ids => [],
+        :updates_count => 4,
+        :updated_fields => {'timestamp' => 4, 'event' => 4},
+        :unchanged_count => 0
+      }
+    end
+  end
+
+  describe "updating log entries in reverse order" do
+    before(:all) do
+      reset_catalog
+      import_base_data("20120501")
+      import_extended_data("20120505", "logs2.csv")
+    end
+
+
+    before(:each) do
+    end
+
+    it "should capture changes" do
+      @extender.stats.should == {
+        :baseline_count => 6,
+        :final_count => 6,
+        :distinct_ids => 4,
+        :adds_count => 0,
+        :new_ids => [],
+        :updates_count => 4,
+        :updated_fields => {'timestamp' => 4, 'event' => 4},
+        :unchanged_count => 0
+      }
+    end
+
+    it "should load the new events" do
+      lambda {import_extended_data("20120506", "logs1.csv", :compare => 'timestamp')}.should_not raise_error
+
+      @extender.stats.should == {
+        :baseline_count => 6,
+        :final_count => 6,
+        :distinct_ids => 4,
+        :adds_count => 0,
+        :new_ids => [],
+        :updates_count => 0,
+        :updated_fields => {},
+        :unchanged_count => 4
+      }
+    end
+  end
+
 
   # test handling of multiple records for same ID in the extended-data file
   # test importing data at top level (no keyfield for sub-attributes)

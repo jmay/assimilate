@@ -9,6 +9,7 @@ class Assimilate::Extender
     @idfield = args[:idfield]
     @filename = args[:filename]
     @keyfield = args[:key]
+    @comparison_field = args[:compare]
 
     load_baseline
 
@@ -29,6 +30,20 @@ class Assimilate::Extender
     end
   end
 
+  def is_newer(current_data, new_data)
+    new_data[@comparison_field].to_i > current_data[@comparison_field].to_i
+  end
+
+  # if there is a field to compare on (i.e. a timestamp), then apply the update if the timestamp is newer;
+  # otherwise (no timestamp) compare the hashes and apply if there are any differences.
+  def apply_this_update(current_record, new_data)
+    if @comparison_field
+      is_newer(current_record[@keyfield], new_data)
+    else
+      current_record[@keyfield] != new_data
+    end
+  end
+
   def <<(record)
     @seen ||= Hash.new(0)
 
@@ -38,12 +53,12 @@ class Assimilate::Extender
     # @seen[key] = data
     current_record = @baseline[key]
     if current_record
-      if current_record[@keyfield] == data
-        @noops << key
-        @seen[key] = {}
-      else
+      if apply_this_update(current_record, data)
         @changes << key
         @seen[key] = data
+      else
+        @noops << key
+        @seen[key] = {}
       end
     else
       @adds << key
