@@ -30,9 +30,10 @@ class Assimilate::Extender
         end
         h[key] = rec
       end
-      if h.empty?
-        raise Assimilate::CorruptDataError, "Unable to find any records with #{@idfield}in #{@domainkey} [#{@domain}]"
-      end
+    end
+    # puts @baseline
+    if @baseline.empty?
+      raise Assimilate::CorruptDataError, "Unable to find any records with #{@idfield} in #{@domainkey} [#{@domain}]"
     end
   end
 

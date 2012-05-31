@@ -150,6 +150,17 @@ describe "loading extended data" do
     end
   end
 
+  describe "with incorrect options" do
+    it "should reject if can't find any records to extend" do
+      lambda {
+        @catalog.extend_data(domain: 'testdata', idfield: 'missingkey', key: 'inauguration')
+        # Assimilate.slurp(File.dirname(__FILE__) + "/../data/#{filename}") do |rec|
+        #   @extender << rec
+        # end
+        # @extender.commit
+      }.should raise_error(Assimilate::CorruptDataError, "Unable to find any records with missingkey in _resource [testdata]")
+    end
+  end
 
   # test handling of multiple records for same ID in the extended-data file
   # test importing data at top level (no keyfield for sub-attributes)
