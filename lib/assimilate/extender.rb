@@ -23,10 +23,16 @@ class Assimilate::Extender
     stored_records = @catalog.catalog.find(@domainkey => @domain).to_a
     @baseline = stored_records.each_with_object({}) do |rec, h|
       key = rec[@idfield]
-      if h.include?(key)
-        raise Assimilate::CorruptDataError, "Duplicate records for key [#{key}] in #{@domainkey} [#{@domain}]"
+      if key
+        # ignore records that are missing a key value.
+        if h.include?(key)
+          raise Assimilate::CorruptDataError, "Duplicate records for key [#{key}] in #{@domainkey} [#{@domain}]"
+        end
+        h[key] = rec
       end
-      h[key] = rec
+      if h.empty?
+        raise Assimilate::CorruptDataError, "Unable to find any records with #{@idfield}in #{@domainkey} [#{@domain}]"
+      end
     end
   end
 
