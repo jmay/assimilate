@@ -30,6 +30,14 @@ describe "loading extended data" do
     @extender.commit
   end
 
+  def import_toplevel_extended_data(datestamp, filename, opts = {})
+    @extender = @catalog.extend_data(opts.merge(domain: 'testdata', datestamp: datestamp, idfield: 'ID'))
+    Assimilate.slurp(File.dirname(__FILE__) + "/../data/#{filename}") do |rec|
+      @extender << rec
+    end
+    @extender.commit
+  end
+
   describe "into matching catalog entries" do
     before(:all) do
       reset_catalog
@@ -56,6 +64,46 @@ describe "loading extended data" do
     it "should do no-ops on duplicate load" do
       # import_extended_data("1002", "dates")
       lambda {import_extended_data("1002", "dates.csv")}.should_not raise_error
+
+      @extender.stats.should == {
+        :baseline_count => 7,
+        :final_count => 7,
+        :distinct_ids => 4,
+        :adds_count => 0,
+        :new_ids => [],
+        :updates_count => 0,
+        :updated_fields => {},
+        :unchanged_count => 4
+      }
+    end
+  end
+
+  describe "at top level of catalog entries" do
+    before(:all) do
+      reset_catalog
+      import_base_data("123")
+    end
+
+    before(:each) do
+      import_toplevel_extended_data("991", "birthdates.csv")
+    end
+
+    it "should capture changes" do
+      @extender.stats.should == {
+        :baseline_count => 6,
+        :final_count => 7,
+        :distinct_ids => 4,
+        :adds_count => 1,
+        :new_ids => ['999'],
+        :updates_count => 3,
+        :updated_fields => {'birthdate' => 4},
+        :unchanged_count => 0
+      }
+    end
+
+    it "should do no-ops on duplicate load" do
+      # import_extended_data("1002", "dates")
+      lambda {import_toplevel_extended_data("992", "birthdates.csv")}.should_not raise_error
 
       @extender.stats.should == {
         :baseline_count => 7,

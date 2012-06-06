@@ -43,11 +43,14 @@ class Assimilate::Extender
 
   # if there is a field to compare on (i.e. a timestamp), then apply the update if the timestamp is newer;
   # otherwise (no timestamp) compare the hashes and apply if there are any differences.
-  def apply_this_update(current_record, new_data)
-    if @comparison_field && current_record[@keyfield]
-      is_newer(current_record[@keyfield], new_data)
+  def apply_this_update?(current_record, new_data)
+    if @comparison_field && current_record[keyfield]
+      is_newer(current_record[keyfield], new_data)
+    elsif keyfield
+      current_record[keyfield] != new_data
     else
-      current_record[@keyfield] != new_data
+      # top-level extension - compare all the attributes to be added
+      new_data.select {|k,v| current_record[k] != v}.any?
     end
   end
 
@@ -60,7 +63,7 @@ class Assimilate::Extender
     # @seen[key] = data
     current_record = @baseline[key]
     if current_record
-      if apply_this_update(current_record, data)
+      if apply_this_update?(current_record, data)
         @changes << key
         @seen[key] = data
       else
@@ -98,11 +101,21 @@ class Assimilate::Extender
   def apply_inserts
     @adds.each do |key|
       data = @seen[key]
-      @catalog.catalog.insert(
-        @domainkey => domain,
-        idfield => key,
-        keyfield => data
-      )
+      if keyfield
+        @catalog.catalog.insert(
+          @domainkey => domain,
+          idfield => key,
+          keyfield => data
+        )
+      else
+        # top-level extension
+        @catalog.catalog.insert(
+          data.merge(
+            @domainkey => domain,
+            idfield => key
+          )
+        )
+      end
     end
   end
 
@@ -110,16 +123,27 @@ class Assimilate::Extender
   def apply_updates
     @changes.each do |key|
       data = @seen[key]
-      @catalog.catalog.update(
-        {
-          @domainkey => domain,
-          idfield => key
-        },
-        {"$set" => {
-            keyfield => data
+      if keyfield
+        @catalog.catalog.update(
+          {
+            @domainkey => domain,
+            idfield => key
+          },
+          {"$set" => {
+              keyfield => data
+            }
           }
-        }
-      )
+        )
+      else
+        # top-level extension
+        @catalog.catalog.update(
+          {
+            @domainkey => domain,
+            idfield => key
+          },
+          {"$set" => data }
+        )
+      end
     end
   end
 
