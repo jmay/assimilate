@@ -16,6 +16,8 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Assimilate::VERSION
 
+  gem.required_ruby_version = '>= 1.9.2'
+
   gem.add_dependency "mongo", "~> 1.6.0"
   gem.add_dependency "bson_ext", "~> 1.6.0"
   gem.add_dependency 'activesupport', "~> 3.2.0"
