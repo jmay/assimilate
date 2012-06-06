@@ -20,7 +20,7 @@ class Assimilate::Command
         @options[:commit] = true
       end
 
-      opts.on("--key FIELDNAME", String, "(*extend* only) Hash key to store extended attributes under") do |f|
+      opts.on("--key FIELDNAME", String, "(*extend* only; optional) Hash key to store extended attributes under") do |f|
         @options[:key] = f
       end
 
@@ -62,7 +62,7 @@ class Assimilate::Command
       logmessage(command, options, results)
 
     when 'extend'
-      raise OptionParser::MissingArgument, "missing keyfield" unless options[:key]
+      # keyfield is an *optional* parameter
 
       results = Assimilate.extend_data(filename, options)
       logmessage(command, options, results)
@@ -110,7 +110,7 @@ EOT
       if results[:updated_fields].any?
         results[:updated_fields].each do |k,v|
           $stderr.puts <<-EOT
-                        #{options[:key]}.#{k}: #{v}
+                        #{options[:key] && options[:key] + '.'}#{k}: #{v}
 EOT
         end
       end
