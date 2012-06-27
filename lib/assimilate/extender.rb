@@ -26,7 +26,15 @@ class Assimilate::Extender
       if key
         # ignore records that are missing a key value.
         if h.include?(key)
-          raise Assimilate::CorruptDataError, "Duplicate records for key [#{key}] in #{@domainkey} [#{@domain}]"
+          # conflict with existing record for the same key
+          # HACK - HARD-CODED BEHAVIOR:
+          # * look for a boolean field called '_active'; if the previously-stored value says inactive and
+          # this one is active, then use the new one.
+          if h[key].include?('_active') && rec.include?('_active') && h[key]['_active'] != rec['_active']
+            rec = [h[key],rec].select {|r| r['_active']}.first
+          else
+            raise Assimilate::CorruptDataError, "Duplicate records for key [#{key}] in #{@domainkey} [#{@domain}]"
+          end
         end
         h[key] = rec
       end

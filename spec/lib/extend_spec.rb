@@ -210,6 +210,30 @@ describe "loading extended data" do
     end
   end
 
+  describe "with conflicting source records" do
+    before(:all) do
+      reset_catalog
+      import_base_data("123", "master_records_conflicting.csv")
+    end
+
+    before(:each) do
+      import_extended_data("1001", "dates.csv")
+    end
+
+    it "should capture changes" do
+      @extender.stats.should == {
+        :baseline_count => 6,
+        :final_count => 7,
+        :distinct_ids => 4,
+        :adds_count => 1,
+        :new_ids => ['16'],
+        :updates_count => 3,
+        :updated_fields => {'date' => 4},
+        :unchanged_count => 0
+      }
+    end
+  end
+
   # test handling of multiple records for same ID in the extended-data file
   # test importing data at top level (no keyfield for sub-attributes)
 end

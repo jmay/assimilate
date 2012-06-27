@@ -1,0 +1,8 @@
+ID,name,title,spouse,_active
+1,George Washington,President,Martha,1
+2,John Adams,Vice President,Abigail,1
+3,Benjamin Franklin,Sage,Deborah,1
+4,Aaron Burr,Duelist,Theodosia,1
+5,Alexander Hamilton,Financier,Elizabeth,1
+6,James Madison,Theorist,Dolly,1
+5,Alexander Hamilton,Financier,PretendSecondWife,0
