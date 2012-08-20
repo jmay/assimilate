@@ -43,6 +43,13 @@ module Assimilate
         extender.commit
       else
         $stderr.puts "suppressing data commit"
+
+        if ENV['ASSIM_VERBOSE']
+          $stderr.puts "UPDATES:"
+          extender.changes.each do |recid|
+            $stderr.puts "#{recid}: #{extender.seen[recid]}"
+          end
+        end
       end
       extender.stats
     end

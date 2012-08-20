@@ -1,5 +1,6 @@
 class Assimilate::Extender
   attr_reader :domain, :idfield, :keyfield
+  attr_reader :adds, :changes, :deletes, :seen
 
   def initialize(args)
     @catalog = args[:catalog]
