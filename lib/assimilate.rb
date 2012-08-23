@@ -22,7 +22,7 @@ module Assimilate
       if opts[:commit]
         batcher.commit
       else
-        $stderr.puts "suppressing data commit"
+        $stderr.puts "(suppressing data commit)"
       end
       batcher.stats
     # TODO explicit handling for Assimilate exceptions - when code is stable
@@ -42,7 +42,7 @@ module Assimilate
       if opts[:commit]
         extender.commit
       else
-        $stderr.puts "suppressing data commit"
+        $stderr.puts "(suppressing data commit)"
 
         if ENV['ASSIM_VERBOSE']
           $stderr.puts "UPDATES:"

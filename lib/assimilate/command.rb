@@ -73,9 +73,15 @@ class Assimilate::Command
     end
   end
 
+  def idsummary(ids)
+    if ids.any?
+      "(#{ids.take(10).join(',')})"
+    end
+  end
+
   def logmessage(command, options, results)
     $stderr.puts <<-EOT
-* assimilate #{command} (#{options.keys.join(', ')})
+assimilate #{command} for #{options[:domain]} using #{options[:idfield]}
 EOT
 
     case command
@@ -84,9 +90,9 @@ EOT
     Original record count: #{results[:baseline_count]}
        Final record count: #{results[:final_count]}
         Unchanged records: #{results[:unchanged_count]}
-              New records: #{results[:adds_count]} (#{results[:new_ids].take(10).join(',')})
-                  Deletes: #{results[:deletes_count]} (#{results[:deleted_ids].take(10).join(',')})
-                  Updates: #{results[:updates_count]} (#{results[:updated_ids].take(10).join(',')})
+              New records: #{results[:adds_count]} #{idsummary(results[:new_ids])}
+                  Deletes: #{results[:deletes_count]} #{idsummary(results[:deleted_ids])}
+                  Updates: #{results[:updates_count]} #{idsummary(results[:updated_ids])}
 EOT
       if results[:updated_fields].any?
         $stderr.puts <<-EOT
