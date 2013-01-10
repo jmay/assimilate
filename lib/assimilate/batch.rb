@@ -20,7 +20,7 @@ class Assimilate::Batch
   end
 
   def load_baseline
-    stored_records = @catalog.catalog.find(@domainkey => @domain).to_a
+    stored_records = @catalog.catalog.find(@domainkey => @domain, @idfield => {"$exists" => 1}).to_a
     @baseline = stored_records.each_with_object({}) do |rec, h|
       key = rec[@idfield]
       if h.include?(key)
