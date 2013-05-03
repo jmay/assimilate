@@ -10,6 +10,9 @@ class Assimilate::Batch
     @idfield = args[:idfield]
     @filename = args[:filename]
 
+    @subset = args[:subset]
+    @suppress_deletes = args[:nodeletes]
+
     load_baseline
 
     @noops = []
@@ -17,6 +20,10 @@ class Assimilate::Batch
     @adds = []
     @deletes = []
     @resolved = false
+  end
+
+  def prime(fieldnames)
+    @fields = fieldnames
   end
 
   def load_baseline
@@ -34,7 +41,11 @@ class Assimilate::Batch
   # Any nil values are ignored; these should not be stored but if they do appear in the catalog then don't want
   # to include them when comparing new records vs. old.
   def stripped_record_for(key)
-    @baseline[key] && @baseline[key].select {|k,v| k !~ /^_/ && !v.nil?}
+    if @subset
+      @baseline[key] && @baseline[key].select {|k,v| @fields.include?(k)}
+    else
+      @baseline[key] && @baseline[key].select {|k,v| k !~ /^_/ && !v.nil?}
+    end
   end
 
   def <<(record)
@@ -65,7 +76,7 @@ class Assimilate::Batch
     if !@resolved
       @deleted_keys = (@baseline.keys - @seen.keys).reject {|k| @baseline[k][@catalog.config[:deletion_marker]]}
 
-      @updated_field_counts = @changes.each_with_object(Hash.new(0)) do |(key,diffs),h|
+      @updated_field_counts = @changes.each_with_object(Hash.new(0)) do |(_,diffs),h|
         # key = rec[idfield]
         # diffs = deltas(stripped_record_for(key), rec)
         diffs.keys.each do |f|
@@ -117,14 +128,18 @@ class Assimilate::Batch
   end
 
   def apply_deletes
-    @deleted_keys.each do |key|
-      @catalog.catalog.update(
-        {
-          @domainkey => domain,
-          idfield => key
-        },
-        {"$set" => {@catalog.config[:deletion_marker] => datestamp}}
-    )
+    unless @suppress_deletes
+      @deleted_keys.each do |key|
+        @catalog.catalog.update(
+          {
+            @domainkey => domain,
+            idfield => key
+          },
+          {
+            "$set" => {@catalog.config[:deletion_marker] => datestamp}
+          }
+      )
+      end
     end
   end
 
@@ -145,7 +160,9 @@ class Assimilate::Batch
           @domainkey => domain,
           idfield => key
         },
-        {"$set" => diffs.merge(marker => datestamp)}
+        {
+          "$set" => diffs.merge(marker => datestamp)
+        }
       )
     end
   end

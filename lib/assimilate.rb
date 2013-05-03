@@ -16,7 +16,12 @@ module Assimilate
       catalog = Catalog.new(:config => opts[:config])
       batcher = catalog.start_batch(opts.merge(:filename => filename))
 
+      headers = nil
       slurp(filename) do |rec|
+        if opts[:subset] && !headers
+          headers = rec.keys
+          batcher.prime(headers)
+        end
         batcher << rec
       end
       if opts[:commit]

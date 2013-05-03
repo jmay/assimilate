@@ -20,6 +20,14 @@ class Assimilate::Command
         @options[:commit] = true
       end
 
+      opts.on("--subset", "Only consider the fields in the input file") do
+        @options[:subset] = true
+      end
+
+      opts.on("--nodeletes", "Do NOT delete existing records that are not present in the input") do
+        @options[:nodeletes] = true
+      end
+
       opts.on("--key FIELDNAME", String, "(*extend* only; optional) Hash key to store extended attributes under") do |f|
         @options[:key] = f
       end
@@ -92,15 +100,21 @@ EOT
         Unchanged records: #{results[:unchanged_count]}
               New records: #{results[:adds_count]} #{idsummary(results[:new_ids])}
                   Deletes: #{results[:deletes_count]} #{idsummary(results[:deleted_ids])}
+EOT
+      if options[:nodeletes]
+        warn "\t\t\tNO DELETIONS"
+      end
+
+      warn <<-EOT
                   Updates: #{results[:updates_count]} #{idsummary(results[:updated_ids])}
 EOT
       if results[:updated_fields].any?
         $stderr.puts <<-EOT
-            Counts by field:
+   Update counts by field:
 EOT
-        results[:updated_fields].each do |k,v|
+        results[:updated_fields].sort.each do |k,v|
           $stderr.puts <<-EOT
-                        #{k}: #{v}
+                #{k.ljust(30, '.')}#{"%6d" % v}
 EOT
         end
       end
