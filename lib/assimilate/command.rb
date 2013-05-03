@@ -50,10 +50,12 @@ class Assimilate::Command
     @command = argv.shift
     filenames = @parser.parse(argv)
 
-    raise OptionParser::MissingArgument, "missing config" unless options[:config]
-    raise OptionParser::MissingArgument, "missing idfield" unless options[:idfield]
-    raise OptionParser::MissingArgument, "missing domain" unless options[:domain]
-    raise "missing filename" unless filenames.any?
+    unless command == 'version'
+      raise OptionParser::MissingArgument, "missing config" unless options[:config]
+      raise OptionParser::MissingArgument, "missing idfield" unless options[:idfield]
+      raise OptionParser::MissingArgument, "missing domain" unless options[:domain]
+      raise "missing filename" unless filenames.any?
+    end
 
     # argv remnants are filenames
     [@command, @options, filenames]
@@ -63,6 +65,9 @@ class Assimilate::Command
     filename = filenames.first
 
     case command
+    when 'version'
+      puts "Assimilate #{Assimilate::VERSION}"
+
     when 'load'
       raise OptionParser::MissingArgument, "missing datestamp" unless options[:datestamp]
 
