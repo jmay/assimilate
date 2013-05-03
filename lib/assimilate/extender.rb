@@ -34,7 +34,9 @@ class Assimilate::Extender
           if h[key].include?('_active') && rec.include?('_active') && h[key]['_active'] != rec['_active']
             rec = [h[key],rec].select {|r| r['_active']}.first
           else
-            raise Assimilate::CorruptDataError, "Duplicate records for key [#{key}] in #{@domainkey} [#{@domain}]"
+            # raise Assimilate::CorruptDataError, "Duplicate records for key [#{key}] in #{@domainkey} [#{@domain}]"
+            # 130503: make this an alert, not fatal
+            warn "POSSIBLE DATA CORRUPTION: duplicate records for #{@idfield}=#{key} in #{@domainkey}=#{@domain}"
           end
         end
         h[key] = rec
