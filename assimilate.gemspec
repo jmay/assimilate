@@ -16,14 +16,14 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Assimilate::VERSION
 
-  gem.required_ruby_version = '>= 1.9.2'
+  gem.required_ruby_version = '>= 2.3.1'
 
-  gem.add_dependency "mongo", "~> 1.6.0"
-  gem.add_dependency "bson_ext", "~> 1.6.0"
+  gem.add_dependency "mongo", "~> 2.3.0"
+  #gem.add_dependency "bson_ext", "~> 1.12.0"
   gem.add_dependency 'activesupport', "~> 3.2.0"
 
-  gem.add_development_dependency "rake", "~> 0.9.2"
-  gem.add_development_dependency "rspec", "~> 2.9.0"
-  gem.add_development_dependency "guard-rspec", "~> 0.7.0"
-  gem.add_development_dependency "ruby_gntp", "~> 0.3.4"
+  gem.add_development_dependency "rake", "~> 11.2"
+  gem.add_development_dependency "rspec", "~> 3.5.0"
+  #gem.add_development_dependency "guard-rspec", "~> 0.7.0"
+  #gem.add_development_dependency "ruby_gntp", "~> 0.3.4"
 end

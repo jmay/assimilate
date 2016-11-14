@@ -26,9 +26,9 @@ class Assimilate::Catalog
     @config = YAML.load(File.open(args[:config]))
     check_config
 
-    @db = Mongo::Connection.new.db(@config[:db])
-    @catalog = @db.collection(@config[:catalog])
-    @batches = @db.collection(@config[:batch])
+    @db = Mongo::Client.new("mongodb://127.0.0.1:27017/" + @config[:db])
+    @catalog = @db[@config[:catalog]]
+    @batches = @db[@config[:batch]]
   end
 
   def check_config

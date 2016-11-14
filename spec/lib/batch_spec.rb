@@ -9,8 +9,8 @@ describe "importing file" do
   end
 
   def reset_catalog
-    @catalog.catalog.remove
-    @catalog.batches.remove
+    @catalog.catalog.drop
+    @catalog.batches.drop
   end
 
   def import_data(datestamp, filename = "batch_input.csv")

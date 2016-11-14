@@ -113,14 +113,14 @@ class Assimilate::Extender
     @adds.each do |key|
       data = @seen[key]
       if keyfield
-        @catalog.catalog.insert(
+        @catalog.catalog.insert_one(
           @domainkey => domain,
           idfield => key,
           keyfield => data
         )
       else
         # top-level extension
-        @catalog.catalog.insert(
+        @catalog.catalog.insert_one(
           data.merge(
             @domainkey => domain,
             idfield => key
@@ -135,7 +135,7 @@ class Assimilate::Extender
     @changes.each do |key|
       data = @seen[key]
       if keyfield
-        @catalog.catalog.update(
+        @catalog.catalog.update_one(
           {
             @domainkey => domain,
             idfield => key
@@ -147,7 +147,7 @@ class Assimilate::Extender
         )
       else
         # top-level extension
-        @catalog.catalog.update(
+        @catalog.catalog.update_one(
           {
             @domainkey => domain,
             idfield => key

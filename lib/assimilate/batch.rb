@@ -120,7 +120,7 @@ class Assimilate::Batch
     raise(Assimilate::DuplicateImportError, "duplicate batch for datestamp #{datestamp}") if @catalog.batches.find(dkey => @domain, 'datestamp' => @datestamp).to_a.any?
     raise(Assimilate::DuplicateImportError, "duplicate batch for file #{@filename}") if @catalog.batches.find(dkey => @domain, 'filename' => @filename).to_a.any?
 
-    @catalog.batches.insert({
+    @catalog.batches.insert_one({
       dkey => @domain,
       'datestamp' => @datestamp,
       'filename' => @filename
@@ -130,7 +130,7 @@ class Assimilate::Batch
   def apply_deletes
     unless @suppress_deletes
       @deleted_keys.each do |key|
-        @catalog.catalog.update(
+        @catalog.catalog.update_one(
           {
             @domainkey => domain,
             idfield => key
@@ -148,14 +148,14 @@ class Assimilate::Batch
   def apply_inserts
     @adds.each_slice(INSERT_BATCH_SIZE) do |slice|
       # mongo insert can't handle CSV::Row objects, must be converted to regular hashes
-      @catalog.catalog.insert(decorate(slice))
+      @catalog.catalog.insert_many(decorate(slice))
     end
   end
 
   def apply_updates
     marker = @catalog.config[:update_marker]
     @changes.each do |key, diffs|
-      @catalog.catalog.update(
+      @catalog.catalog.update_one(
         {
           @domainkey => domain,
           idfield => key
